@@ -1,0 +1,9 @@
+(executable
+  (name eval)
+  (modules eval syntax parser lexer environment runner)
+)
+
+(env
+  (dev
+    (flags (:standard -warn-error -a)))
+)

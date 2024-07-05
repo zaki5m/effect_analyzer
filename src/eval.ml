@@ -59,7 +59,7 @@ let rec eval_computation (state: state) = function
       (match c with
       | Return v -> 
         let comp = substitute_computation x v c2 in
-        eval_computation (update x (eval_value state v) state) comp
+        eval_computation state comp
       | _ -> failwith "Expected return in do")
   | If (v, c1, c2) -> (match eval_value state v with
       | Bool true -> eval_computation state c1
@@ -69,7 +69,7 @@ let rec eval_computation (state: state) = function
       | Fun (x, c) ->
           let v = eval_value state v2 in
           let comp = substitute_computation x v c in
-          eval_computation (update x v state) comp
+          eval_computation state comp
       | _ -> failwith "Expected function in application")
   | Handle (v, c) -> (match eval_value state v with
       | Handler h -> eval_handle h state c
@@ -100,8 +100,9 @@ and eval_handle h state c =
         (try
           let v_eval = eval_value !state' v in
           let (y, k, c') = find_op_clause op !state' in
-          let state'' = update y v_eval state in
-          eval_computation (update k (Fun (x, Handle (Handler h, c))) state'') c'
+          let comp = substitute_computation y v_eval c' in
+          let comp' = substitute_computation k (Fun (x, Handle (Handler h, c))) comp in
+          eval_computation state comp'
           with Not_found -> Op(op, ((eval_value !state' v), x, Handle (Handler h, c))))
     | _ -> failwith "Unhandled case in handle"
 

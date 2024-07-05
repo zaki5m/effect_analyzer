@@ -18,3 +18,14 @@ with h handle with h2 handle eff(true;y. return y);;
 ```
 $ ./_build/default/src/eval.exe filepath
 ```
+
+## 開発関連
+lexer
+```
+ocamllex src/lexer.mll
+```
+
+parser 
+```
+menhir src/parser.mly
+```

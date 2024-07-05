@@ -1140,7 +1140,7 @@ let
 
   | 26 ->
 # 53 "src/lexer.mll"
-        ( exit 0 )
+        ( EOF )
 # 1145 "src/lexer.ml"
 
   | __ocaml_lex_state -> lexbuf.Lexing.refill_buff lexbuf;

@@ -1,6 +1,6 @@
 (executable
   (name eval)
-  (modules eval syntax parser lexer environment runner)
+  (modules eval syntax parser lexer environment runner subst)
 )
 
 (env

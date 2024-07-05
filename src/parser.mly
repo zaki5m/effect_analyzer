@@ -7,8 +7,9 @@
 %token TRUE FALSE 
 %token FUN HANDLER RETURN DO WITH HANDLE IN
 %token IF THEN ELSE
-%token SEMISEMI
+%token SEMISEMI CARET
 %token <Syntax.id> ID
+%token <string>STRING_LITERAL
 %token EOF
 
 %start main
@@ -22,6 +23,7 @@
 
 main:
   e=Expr SEMISEMI { Exp e }
+  | e=Expr EOF { Exp e }
 
 Expr :
     RETURN v=VExpr { Return v }
@@ -31,15 +33,19 @@ Expr :
   | v1=VExpr v2=VExpr { Apply(v1, v2) }
   | WITH v=VExpr HANDLE e=Expr { Handle(v, e) }
   | v=VExpr { Return v }
+  | LPAREN e=Expr RPAREN { e }
 
 VExpr :
   | TRUE { Bool true }
   | FALSE { Bool false }
+  | s=STRING_LITERAL { String s }
+  | v1=VExpr CARET v2=VExpr { Concat(v1, v2) }
   | i=ID { Var i }
   | FUN i=ID RARROW e=Expr { Fun(i, e) }
   | HANDLER LBRACE RETURN i=ID RARROW e=Expr COMMA op=Op_clauses RBRACE {
       Handler { return_clause = (i, e); op_clauses = op }
     }
+  | LPAREN v=VExpr RPAREN { v }
 
 Op_clauses:
   | i1=ID LPAREN i2=ID SEMICOLON i3=ID RPAREN RARROW e=Expr { [(i1, (i2, i3, e))] }

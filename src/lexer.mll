@@ -41,7 +41,9 @@ rule read = parse
   | ";;"            { SEMISEMI }
   | ","             { COMMA }
   | "."             { DOT }
-  | ['a'-'z'] ['a'-'z' '0'-'9' '_' '\'']*
+  | "^"             { CARET } 
+  | "\"" [^ '"']* "\"" as lxm { STRING_LITERAL (String.sub lxm 1 (String.length lxm - 2)) }
+  | ['a'-'z'] ['a'-'z' 'A'-'Z' '0'-'9' '_' '\'']*
     { let id = Lexing.lexeme lexbuf in
       try
         List.assoc id reservedWords

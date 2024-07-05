@@ -5,6 +5,7 @@ type token =
   | WITH
   | TRUE
   | THEN
+  | STRING_LITERAL of (string)
   | SEMISEMI
   | SEMICOLON
   | RPAREN
@@ -26,6 +27,7 @@ type token =
   | DOT
   | DO
   | COMMA
+  | CARET
 
 (* This exception is raised by the monolithic API functions. *)
 

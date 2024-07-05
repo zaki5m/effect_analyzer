@@ -3,6 +3,8 @@ type id = string
 type value =
   | Var of id
   | Bool of bool
+  | String of string
+  | Concat of value * value
   | Fun of id * computation
   | Handler of handler
 

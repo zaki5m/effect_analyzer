@@ -50,10 +50,6 @@ let rec eval_computation (state: state) = function
   | Return v -> Return (eval_value state v)
   | Op (op, (v, x, c)) -> (* Handle operation calls *)
     Op (op, (v, x, c))
-    (* let v_eval = eval_value state v in
-    let (_, (y, k, c')) = find_op_clause op state in
-    let state' = update y v_eval state in
-    eval_computation (update k (Fun (x, Handle (Handler h, c))) state') c' *)
   | Do (x, c1, c2) ->
       let c = eval_computation state c1 in
       (match c with
@@ -102,8 +98,15 @@ let rec eval env comp =
   | _ -> failwith "Expected return"
 
 let _ =
-  Printf.printf "Ready\n"; flush stdout;
-  let lexbuf = Lexing.from_channel stdin in
+  (* コマンドライン引数があればファイルのコードを読み込む *)
+  let lexbuf = 
+    if Array.length Sys.argv > 1 then
+      let file = open_in Sys.argv.(1) in
+      Lexing.from_channel file 
+    else
+      (Printf.printf "Ready\n"; flush stdout;
+      Lexing.from_channel stdin)
+  in
   try
     let program = Parser.main Lexer.read lexbuf in
     let Exp comp = program in

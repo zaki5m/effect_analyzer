@@ -1,0 +1,3 @@
+do h <- handler { return x -> return x, reverse (x;k) -> k false } in 
+do h2 <- handler { return x -> reverse(false;z. return z), eff(x;k) -> k x } in
+with h handle with h2 handle eff(true;y. return y);;

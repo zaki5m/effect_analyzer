@@ -1,6 +1,5 @@
-(executable
-  (name cui)
-  (libraries eval)
+(library
+  (name eval)
 )
 
 (env

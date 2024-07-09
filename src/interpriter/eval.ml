@@ -112,7 +112,7 @@ let rec eval env comp =
   | Return v -> print_val v
   | _ -> failwith "Expected return"
 
-let _ =
+let main () =
   (* コマンドライン引数があればファイルのコードを読み込む *)
   let lexbuf = 
     if Array.length Sys.argv > 1 then

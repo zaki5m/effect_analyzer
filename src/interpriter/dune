@@ -1,6 +1,13 @@
 (library
   (name eval)
+  (libraries syntax)
 )
+
+(menhir
+  (modules parser))
+
+(ocamllex
+ (modules lexer))
 
 (env
   (dev

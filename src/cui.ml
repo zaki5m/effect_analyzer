@@ -1,3 +1,4 @@
 open Eval 
+open Aew
 
-let _ = main ()
+let _ = test ()

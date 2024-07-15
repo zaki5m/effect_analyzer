@@ -1,6 +1,6 @@
-(executable
-  (name cui)
-  (libraries eval aew)
+(library
+  (name aew)
+  (libraries eval syntax)
 )
 
 (env

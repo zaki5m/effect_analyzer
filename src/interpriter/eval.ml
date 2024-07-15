@@ -112,7 +112,7 @@ let rec eval env comp =
   | Return v -> print_val v
   | _ -> failwith "Expected return"
 
-let main () =
+let read () = 
   (* コマンドライン引数があればファイルのコードを読み込む *)
   let lexbuf = 
     if Array.length Sys.argv > 1 then
@@ -125,7 +125,10 @@ let main () =
   try
     let program = Parser.main Lexer.read lexbuf in
     let Exp comp = program in
-    eval initial_state comp
+    comp
   with
   | Parser.Error ->
-    Printf.fprintf stderr "At offset %d: syntax error.\n%!" (Lexing.lexeme_start lexbuf)
+    Printf.fprintf stderr "At offset %d: syntax error.\n%!" (Lexing.lexeme_start lexbuf); exit 1
+
+let main () =
+  read () |> eval initial_state 

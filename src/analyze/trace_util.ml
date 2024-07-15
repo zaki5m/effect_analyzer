@@ -21,9 +21,11 @@ let algorithm_sigma id op (h: handler_syntax) sigma =
   let (b, continuation_state) = pick_arrow continuation_trace in
   (* continuation_stateのbをop_bで置き換える *)
   let continuation_state' = substitution_trace_state b (TrVar "op_b") continuation_state in
-  (* c_op'内のk_t,k_rを置き換え *)
+  (* c_op'内のk_t,k_rを置き換え
   let c_op'' = substitution_trace_state "k_t" continuation_state'.trace (substitution_trace_state "k_r" continuation_state'.return_trace c_op') in
-  c_op''
+  Printf.printf "c_op: %s\n" (string_of_trace_syntax c_op.trace);
+  Printf.printf "c_op'': %s\n" (string_of_trace_syntax c_op''.trace); *)
+  c_op', continuation_state'
 
 let algorithm_rho trace handler = match handler with
   | None -> None
@@ -40,8 +42,11 @@ let rec handler_in_trace_analysis sigma handler = function
   | (TrOp (id, op), t) -> (match handler with
           | None -> create_trace_state (TrOp (id, op)) t sigma
           | Some h -> if is_handled h op then
-              let sigma' = algorithm_sigma id op h sigma in
-              create_trace_state (TrSeq (TrOp (id, op), sigma'.trace)) sigma'.return_trace (sigma @ sigma'.trace_set)
+              let c_op, continuation_state = algorithm_sigma id op h sigma in
+              let continuation_state' = handler_in_trace_analysis sigma handler (continuation_state.trace, continuation_state.return_trace) in
+              (* c_op内のk_t,k_rを置き換え *)
+              let c_op' = substitution_trace_state "k_t" continuation_state'.trace (substitution_trace_state "k_r" continuation_state'.return_trace c_op) in
+              create_trace_state (TrSeq (TrOpCheck op, c_op'.trace)) c_op'.return_trace (sigma @ c_op'.trace_set)
             else let rho = algorithm_rho t handler in
             (match rho with
             | None -> create_trace_state (TrOp (id, op)) t sigma
@@ -54,8 +59,11 @@ let rec handler_in_trace_analysis sigma handler = function
     | TrOp (id, op) -> (match handler with
       | None -> create_trace_state (TrSeq (t1, t2)) t sigma
       | Some h -> if is_handled h op then
-        let sigma' = algorithm_sigma id op h sigma in
-        create_trace_state (TrSeq (TrOp (id, op), sigma'.trace)) sigma'.return_trace (sigma @ sigma'.trace_set)
+          let c_op, continuation_state = algorithm_sigma id op h sigma in
+          let continuation_state' = handler_in_trace_analysis sigma handler (continuation_state.trace, continuation_state.return_trace) in
+          (* c_op内のk_t,k_rを置き換え *)
+          let c_op' = substitution_trace_state "k_t" continuation_state'.trace (substitution_trace_state "k_r" continuation_state'.return_trace c_op) in
+          create_trace_state (TrSeq (TrOpCheck op, c_op'.trace)) c_op'.return_trace (sigma @ c_op'.trace_set)
         else 
           handler_in_trace_analysis sigma handler (t2, t))
     | _ -> 

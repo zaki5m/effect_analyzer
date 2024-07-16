@@ -21,10 +21,6 @@ let algorithm_sigma id op (h: handler_syntax) sigma =
   let (b, continuation_state) = pick_arrow continuation_trace in
   (* continuation_stateのbをop_bで置き換える *)
   let continuation_state' = substitution_trace_state b (TrVar "op_b") continuation_state in
-  (* c_op'内のk_t,k_rを置き換え
-  let c_op'' = substitution_trace_state "k_t" continuation_state'.trace (substitution_trace_state "k_r" continuation_state'.return_trace c_op') in
-  Printf.printf "c_op: %s\n" (string_of_trace_syntax c_op.trace);
-  Printf.printf "c_op'': %s\n" (string_of_trace_syntax c_op''.trace); *)
   c_op', continuation_state'
 
 let algorithm_rho trace handler = match handler with

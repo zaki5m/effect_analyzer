@@ -1,8 +1,8 @@
-(executable
-  (name cui)
+(executables
+  (public_names interpriter analyzer)
+  (names interpriter analyzer)
   (libraries eval aew)
 )
-
 (env
   (dev
     (flags (:standard -warn-error -a)))

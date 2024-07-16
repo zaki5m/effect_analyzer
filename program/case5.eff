@@ -1,0 +1,6 @@
+do printFullName <- 
+    fun x -> read(x;foreName. 
+                    read(x;surName. return foreName ^ surName)) in
+do h <- handler { return y -> return y, read (y;k) -> return y } in
+do x <- dumop(false;x. return x) in
+with h handle (printFullName true)

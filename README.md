@@ -35,3 +35,10 @@ with h handle with h2 handle eff(true;y. return y);;
 ```
 $ ./_build/default/src/analyzer.exe filepath
 ```
+
+## プログラム中のコメント
+OCamlのコメントと同様のコメント
+
+```
+(* ここがコメント *)
+```

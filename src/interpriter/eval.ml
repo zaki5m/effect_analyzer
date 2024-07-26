@@ -70,7 +70,9 @@ let rec eval_computation (state: state) = function
       | Return v -> 
         let comp = substitute_computation x v c2 in
         eval_computation state comp
-      | _ -> failwith "Expected return in do")
+      | Op (op, (v, y, c')) -> 
+        Op (op, ((eval_value state v), y, Do (x, c', c2)))
+      | _ -> failwith "Expected return or op in do")
   | If (v, c1, c2) -> (match eval_value state v with
       | Bool true -> eval_computation state c1
       | Bool false -> eval_computation state c2

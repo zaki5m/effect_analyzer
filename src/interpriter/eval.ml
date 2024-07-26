@@ -122,6 +122,7 @@ let rec eval env comp =
   let evaled_comp = eval_computation env comp in
   match evaled_comp with
   | Return v -> print_val v
+  | Op (op, (_, _, _)) -> failwith ("Uncaught operation " ^ op)
   | _ -> print_computation evaled_comp
 
 let read () = 

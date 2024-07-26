@@ -19,7 +19,17 @@ let string_of_val = function
   | Var x -> "<var>" ^ x
   | Concat _ -> "<concat>"
 
+let rec string_of_computation = function
+  | Return v -> "Return " ^ string_of_val v
+  | Op (op, (v, x, c)) -> "Op (" ^ op ^ ", " ^ string_of_val v ^ ", " ^ x ^ ". " ^ string_of_computation c ^ ")"
+  | Do (x, c1, c2) -> "Do (" ^ x ^ ". " ^ string_of_computation c1 ^ ", " ^ string_of_computation c2 ^ ")"
+  | If (v, c1, c2) -> "If (" ^ string_of_val v ^ ", " ^ string_of_computation c1 ^ ", " ^ string_of_computation c2 ^ ")"
+  | Apply (v1, v2) -> "Apply (" ^ string_of_val v1 ^ ", " ^ string_of_val v2 ^ ")"
+  | Handle (v, c) -> "Handle (" ^ string_of_val v ^ ", " ^ string_of_computation c ^ ")"
+
 let  print_val v = print_string (string_of_val v)
+
+let print_computation c = print_string (string_of_computation c)
 
 type state = {
   environment: value Environment.t;
@@ -110,7 +120,7 @@ let rec eval env comp =
   let evaled_comp = eval_computation env comp in
   match evaled_comp with
   | Return v -> print_val v
-  | _ -> failwith "Expected return"
+  | _ -> print_computation evaled_comp
 
 let read () = 
   (* コマンドライン引数があればファイルのコードを読み込む *)

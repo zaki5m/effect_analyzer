@@ -15,10 +15,13 @@
     ("handle", HANDLE);
     ("in", IN);
   ]
+
+  let nest = ref 0
 }
 
 rule read = parse
   | [' ' '\t' '\n'] { read lexbuf }
+  | "(*"            { incr nest; comment lexbuf }
   | "true"          { TRUE }
   | "false"         { FALSE }
   | "fun"           { FUN }
@@ -51,3 +54,9 @@ rule read = parse
       _ -> Parser.ID id
      }
   | eof { EOF }
+and comment = parse
+  | "*)"            { if !nest > 1 then (decr nest; comment lexbuf)  (* ネストされたコメントの終わり *)
+                      else read lexbuf }  (* コメントの全体が終了 *)
+  | "(*"            { incr nest; comment lexbuf }  (* ネストされたコメントの開始 *)
+  | eof             { failwith "コメントが閉じられていません" }
+  | _               { comment lexbuf }  (* コメント内の文字を読み飛ばす *)

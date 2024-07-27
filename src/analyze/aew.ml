@@ -28,10 +28,15 @@ let rec check_computation_trace (env: trace_env) = function
     let op_trace = TrOp (!op_id, op) in
     op_id := !op_id + 1;
     create_trace_state (TrSeq (op_trace, trace_state.trace))  trace_state.return_trace  new_trace_set
-  | Do (x, c1, c2) ->
-    let trace_state1 = check_computation_trace env c1 in
-    let trace_state2 = check_computation_trace (update_trace_env x trace_state1.return_trace env) c2 in
-    create_trace_state (TrSeq (trace_state1.trace, trace_state2.trace)) trace_state2.return_trace (trace_state1.trace_set @ trace_state2.trace_set)
+  | Do (x, c1, c2) ->(
+    match c1 with
+      | Op (op, (v, y, c')) -> 
+        check_computation_trace env (Op (op, (v, y, Do (x, c', c2))))
+      | _ -> 
+        let trace_state1 = check_computation_trace env c1 in
+        let trace_state2 = check_computation_trace (update_trace_env x trace_state1.return_trace env) c2 in
+        create_trace_state (TrSeq (trace_state1.trace, trace_state2.trace)) trace_state2.return_trace (trace_state1.trace_set @ trace_state2.trace_set)
+  )
   | If (_, c1, c2) ->
     let trace_state1 = check_computation_trace env c1 in
     let trace_state2 = check_computation_trace env c2 in

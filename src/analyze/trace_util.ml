@@ -59,7 +59,7 @@ let rec handler_in_trace_analysis sigma handler = function
           let continuation_state' = handler_in_trace_analysis sigma handler (continuation_state.trace, continuation_state.return_trace) in
           (* c_op内のk_t,k_rを置き換え *)
           let c_op' = substitution_trace_state "k_t" continuation_state'.trace (substitution_trace_state "k_r" continuation_state'.return_trace c_op) in
-          create_trace_state (TrSeq (TrOpCheck op, c_op'.trace)) c_op'.return_trace (sigma @ c_op'.trace_set)
+          create_trace_state (TrSeq (TrOpCheck op, c_op'.trace)) c_op'.return_trace (sigma @ c_op'.trace_set @ continuation_state'.trace_set)
         else 
           handler_in_trace_analysis sigma handler (t2, t))
     | _ -> 

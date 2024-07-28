@@ -2,7 +2,7 @@
 (* 変数の環境 *)
 type 'a t
 
-exception Not_bound
+exception Not_found
 
 val empty : 'a t
 val extend :  Syntax.id -> 'a -> 'a t -> 'a t

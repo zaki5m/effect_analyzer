@@ -51,7 +51,8 @@ let rec check_computation_trace (env: trace_env) = function
     let trace_state = check_computation_trace env c in
     let v_trace = check_value_trace env v in
     (match v_trace with
-      | TrHandler h -> handler_in_trace_analysis trace_state.trace_set (Some h) (trace_state.trace, trace_state.return_trace)
+      | TrHandler h -> 
+        handler_in_trace_analysis trace_state.trace_set (Some h) (trace_state.trace, trace_state.return_trace)
       | _ -> handler_in_trace_analysis trace_state.trace_set None (trace_state.trace, trace_state.return_trace))
 
 and check_value_trace (env: trace_env) = function
@@ -60,7 +61,7 @@ and check_value_trace (env: trace_env) = function
   | Fun (x, c) -> TrArrow (TrVar x, check_computation_trace (update_trace_env x (TrVar x) env) c)
   | Handler h -> check_handler_trace h env
   | Var x -> (try lookup_trace_env x env with 
-        Trace_environment.Not_bound -> failwith ("Variable not bound: " ^ x))
+        Trace_environment.Not_found -> failwith ("Variable not bound: " ^ x))
   | Concat _ -> TrEmpty
 
 and check_handler_trace (h: handler) env =

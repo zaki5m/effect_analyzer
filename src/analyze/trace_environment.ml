@@ -2,7 +2,7 @@ open Syntax
 
 type 'a t = (Syntax.id * 'a) list
 
-exception Not_bound
+exception Not_found
 
 let empty = []
 let extend x v row = (x, v)::row

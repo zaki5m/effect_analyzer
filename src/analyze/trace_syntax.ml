@@ -18,9 +18,7 @@ and handler_syntax = {
     return: trace_state;
     op: (string * trace_state) list;
     ops : string list;
-  }
-
-(* handlerは未実装 *)  
+  } 
 
 let string_of_trace_syntax trace = 
   let rec string_of_trace_syntax' = function
@@ -64,3 +62,28 @@ let create_trace_state trace return trace_set = {
   trace = trace;
   trace_set = trace_set;
 }
+
+(* traceの簡略化(εの読み飛ばし) *)
+let optimize_trace trace = 
+  let rec optimize_trace' = function
+    | TrSeq (TrEmpty, TrEmpty) -> TrEmpty
+    | TrSeq (TrEmpty, t) -> optimize_trace' t
+    | TrSeq (t, TrEmpty) -> optimize_trace' t
+    | TrSeq (t1, t2) -> (
+      let t1' = optimize_trace' t1 in
+      let t2' = optimize_trace' t2 in
+      match t1', t2' with
+      | TrEmpty, t -> t
+      | t, TrEmpty -> t
+      | _ -> TrSeq (t1', t2'))
+    | TrNonDet (t1, t2) -> TrNonDet (optimize_trace' t1, optimize_trace' t2)
+    | TrArrow (t, s) -> TrArrow (optimize_trace' t, optimize_trace_state s)
+    | TrParen t -> TrParen (optimize_trace' t)
+    | t -> t
+  and optimize_trace_state s = {
+    return_trace = optimize_trace' s.return_trace;
+    trace = optimize_trace' s.trace;
+    trace_set = List.map (fun (id, (t1, t2)) -> (id, (optimize_trace' t1, optimize_trace' t2))) s.trace_set;
+  }
+  in
+  optimize_trace' trace

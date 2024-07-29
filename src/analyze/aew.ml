@@ -89,4 +89,9 @@ let test () =
   Command.option ();
   let comp = read () in 
   let trace = check_trace comp in
-  print_endline (string_of_trace_syntax trace.trace)
+  let trace = 
+    if !Command.trace_optimize then
+      optimize_trace trace.trace
+    else
+      trace.trace in
+  print_endline (string_of_trace_syntax trace)

@@ -45,7 +45,7 @@ let rec check_computation_trace (env: trace_env) = function
     Log.log DEBUG (string_of_computation (If (v, c1, c2)));
     let trace_state1 = check_computation_trace env c1 in
     let trace_state2 = check_computation_trace env c2 in
-    create_trace_state (TrNonDet (trace_state1.trace, trace_state2.trace)) (TrNonDet (trace_state1.return_trace, trace_state2.return_trace)) (trace_state1.trace_set @ trace_state2.trace_set)
+    create_trace_state (TrParen (TrNonDet (trace_state1.trace, trace_state2.trace))) (TrNonDet (trace_state1.return_trace, trace_state2.return_trace)) (trace_state1.trace_set @ trace_state2.trace_set)
   | Apply (v1, v2) ->
     Log.log DEBUG (string_of_computation (Apply (v1, v2)));
     let trace_state1 = check_value_trace env v1 in

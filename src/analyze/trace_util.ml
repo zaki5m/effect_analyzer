@@ -95,4 +95,7 @@ let rec handler_in_trace_analysis sigma handler = function
     | _ -> failwith "Not implemented")
   | (TrArrow (t, s), t') -> failwith "Not implemented"
   | (TrHandler h, t) -> failwith "Not implemented"
+  | (TrParen t, t') -> 
+    let trace_state = handler_in_trace_analysis sigma handler (t, t') in
+    create_trace_state (TrParen trace_state.trace) trace_state.return_trace trace_state.trace_set
   

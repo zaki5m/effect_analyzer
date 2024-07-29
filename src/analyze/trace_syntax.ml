@@ -8,6 +8,7 @@ type trace_syntax =
   | TrNonDet of trace_syntax * trace_syntax
   | TrArrow of trace_syntax * trace_state
   | TrHandler of handler_syntax
+  | TrParen of trace_syntax
 and trace_state = {
     return_trace: trace_syntax;
     trace: trace_syntax;
@@ -32,6 +33,7 @@ let string_of_trace_syntax trace =
     | TrNonDet (t1, t2) -> (string_of_trace_syntax' t1) ^ " | " ^ (string_of_trace_syntax' t2)
     | TrArrow (t, s) -> (string_of_trace_syntax' t) ^ " -> " ^ (string_of_trace_state s)
     | TrHandler h -> "Handler"
+    | TrParen t -> "(" ^ (string_of_trace_syntax' t) ^ ")"
   and string_of_trace_state s =
     (string_of_trace_syntax' s.return_trace) ^ ";\n" ^ (string_of_trace_syntax' s.trace)
   in
@@ -49,6 +51,7 @@ let rec substitution_trace_syntax x v = function
     | TrVar y -> if x = y then TrArrow (t, s) else TrArrow (TrVar y, substitution_trace_state x v s)
     | _ -> TrArrow (substitution_trace_syntax x v t, substitution_trace_state x v s))
   | TrHandler h -> TrHandler h
+  | TrParen t -> TrParen (substitution_trace_syntax x v t)
 and substitution_trace_state x v s = {
     return_trace = substitution_trace_syntax x v s.return_trace;
     trace = substitution_trace_syntax x v s.trace;

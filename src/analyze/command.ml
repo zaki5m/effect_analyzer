@@ -8,7 +8,7 @@ let parse_args () =
       | "debug" -> log_level := DEBUG
       | "info" -> log_level := INFO
       | _ -> failwith "Unknown log level"
-    ), "Set log level (debug, info, warn, error)")
+    ), "Set log level (debug, info)")
   ] in
   let usage_msg = "Usage: my_program [options]" in
   Arg.parse speclist (fun _ -> ()) usage_msg;

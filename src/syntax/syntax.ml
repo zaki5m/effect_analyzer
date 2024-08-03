@@ -22,4 +22,4 @@ and computation =
   | Handle of value * computation
 
 type program = 
-  Exp of computation
+  Exp of ((string * ( string * string)) list * computation)

@@ -1,6 +1,9 @@
+effect read: bool -> string;
+effect dumop: bool -> string
+
 do printFullName <- 
     fun x -> read(x;foreName. 
                     read(x;surName. return foreName ^ surName)) in
 do h <- handler { return y -> return y, read (y;k) -> do x <- dumop(true;x. return x) in k "Bob" } in
-do x <- dumop(h;x. return x) in
+do x <- dumop(true;x. return x) in
 with h handle (printFullName true)

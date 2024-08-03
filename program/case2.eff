@@ -1,3 +1,4 @@
+effect read: bool -> string
 do printFullName <- 
     fun x -> read(x;foreName. 
                     read(x;surName. return foreName ^ surName)) in

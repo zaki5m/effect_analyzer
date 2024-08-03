@@ -137,7 +137,10 @@ let read () =
   in
   try
     let program = Parser.main Lexer.read lexbuf in
-    let Exp comp = program in
+    let Exp (signatures, comp) = program in
+    let signatures = Type.signatures_of_string_list signatures in
+    let type_check = Type.type_of_program signatures comp in
+    print_endline (Type.string_of_ty type_check);
     comp
   with
   | Parser.Error ->

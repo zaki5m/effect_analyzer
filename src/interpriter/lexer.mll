@@ -14,6 +14,7 @@
     ("with", WITH);
     ("handle", HANDLE);
     ("in", IN);
+    ("effect", EFFECT);
   ]
 
   let nest = ref 0
@@ -34,12 +35,14 @@ rule read = parse
   | "with"          { WITH }
   | "handle"        { HANDLE }
   | "in"            { IN }
+  | "effect"        { EFFECT }
   | "<-"            { LARROW }
   | "->"            { RARROW }
   | "("             { LPAREN }
   | ")"             { RPAREN }
   | "{"             { LBRACE }
   | "}"             { RBRACE }
+  | ":"             { COLON }
   | ";"             { SEMICOLON }
   | ";;"            { SEMISEMI }
   | ","             { COMMA }

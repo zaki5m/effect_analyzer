@@ -1,3 +1,6 @@
+effect read: bool -> string;
+effect dumop: bool -> string
+
 do printFullName <- 
     fun x -> read(x;foreName. 
                     read(x;surName. return foreName ^ surName)) in

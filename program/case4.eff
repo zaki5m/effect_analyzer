@@ -1,3 +1,6 @@
+effect read: bool -> string;
+effect dumop: bool -> string
+
 do outer_h <- handler { return y -> return y, dumop (y;k) -> k "Bob" } in
 with outer_h handle 
 do printFullName <- 

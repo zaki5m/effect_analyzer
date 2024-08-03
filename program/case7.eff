@@ -1,1 +1,5 @@
+effect read: bool -> string;
+effect write: bool -> string;
+effect op: bool -> bool
+
 op(true;y. if true then read(true;y. return y) else write(true;y. return y))

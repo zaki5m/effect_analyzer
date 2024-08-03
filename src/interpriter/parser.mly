@@ -10,6 +10,7 @@
 %token SEMISEMI CARET
 %token <Syntax.id> ID
 %token <string>STRING_LITERAL
+%token EFFECT COLON
 %token EOF
 
 %start main
@@ -22,8 +23,12 @@
 %%
 
 main:
-  e=Expr SEMISEMI { Exp e }
-  | e=Expr EOF { Exp e }
+  effects=Effect_list e=Expr SEMISEMI { Exp (effects, e) }
+  | effects=Effect_list e=Expr EOF { Exp (effects, e) }
+
+Effect_list:
+  | EFFECT i1=ID COLON i2=ID RARROW i3=ID { [(i1, (i2, i3))] }
+  | effects=Effect_list SEMICOLON EFFECT i1=ID COLON i2=ID RARROW i3=ID { (i1, (i2, i3)) :: effects }
 
 Expr :
     RETURN v=VExpr { Return v }

@@ -1,6 +1,6 @@
 (library
   (name eval)
-  (libraries syntax)
+  (libraries syntax type)
 )
 
 (menhir

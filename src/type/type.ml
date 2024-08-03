@@ -171,4 +171,5 @@ let rec signatures_of_string_list = function
   | [] -> []
   | (x, (ty1, ty2))::rest -> (x, (ty_of_string ty1, ty_of_string ty2))::(signatures_of_string_list rest)
 
-  
+(* astを型情報付きのastに変更 *)
+

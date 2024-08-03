@@ -1,0 +1,9 @@
+(library
+  (name type)
+  (libraries syntax)
+)
+
+(env
+  (dev
+    (flags (:standard -warn-error -a)))
+)

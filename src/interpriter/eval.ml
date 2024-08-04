@@ -11,26 +11,6 @@ exception Error of string
 
 let err s = raise (Error s)
 
-let string_of_val = function
-  | Bool b -> string_of_bool b
-  | String s -> s
-  | Fun _ -> "<fun>"
-  | Handler _ -> "<handler>"
-  | Var x -> "<var>" ^ x
-  | Concat _ -> "<concat>"
-
-let rec string_of_computation = function
-  | Return v -> "Return " ^ string_of_val v
-  | Op (op, (v, x, c)) -> "Op (" ^ op ^ ", " ^ string_of_val v ^ ", " ^ x ^ ". " ^ string_of_computation c ^ ")"
-  | Do (x, c1, c2) -> "Do (" ^ x ^ ". " ^ string_of_computation c1 ^ ", " ^ string_of_computation c2 ^ ")"
-  | If (v, c1, c2) -> "If (" ^ string_of_val v ^ ", " ^ string_of_computation c1 ^ ", " ^ string_of_computation c2 ^ ")"
-  | Apply (v1, v2) -> "Apply (" ^ string_of_val v1 ^ ", " ^ string_of_val v2 ^ ")"
-  | Handle (v, c) -> "Handle (" ^ string_of_val v ^ ", " ^ string_of_computation c ^ ")"
-
-let  print_val v = print_string (string_of_val v)
-
-let print_computation c = print_string (string_of_computation c)
-
 type state = {
   environment: value Environment.t;
   runner: Runner.t;
@@ -118,7 +98,8 @@ and eval_handle h state c =
           with Not_found -> Op(op, ((eval_value !state' v), x, Handle (Handler h, c))))
     | _ -> failwith "Unhandled case in handle"
 
-let rec eval env comp = 
+let rec eval env program = 
+  let Exp (_, comp) = program in
   let evaled_comp = eval_computation env comp in
   match evaled_comp with
   | Return v -> print_val v
@@ -140,8 +121,7 @@ let read () =
     let Exp (signatures, comp) = program in
     let signatures = Type.signatures_of_string_list signatures in
     let type_check = Type.type_of_program signatures comp in
-    print_endline (Type.string_of_ty type_check);
-    comp
+    program
   with
   | Parser.Error ->
     Printf.fprintf stderr "At offset %d: syntax error.\n%!" (Lexing.lexeme_start lexbuf); exit 1

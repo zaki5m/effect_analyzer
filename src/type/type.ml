@@ -61,6 +61,7 @@ let rec find_primitive_type subst = function
       let ty = List.assoc x subst in
       find_primitive_type subst ty
     with Not_found -> TyVar x)
+  | TyArrow (ty1, (ty2, _)) -> TyArrow (find_primitive_type subst ty1, (find_primitive_type subst ty2, []))
   | ty -> ty
 
 
@@ -171,5 +172,13 @@ let rec signatures_of_string_list = function
   | [] -> []
   | (x, (ty1, ty2))::rest -> (x, (ty_of_string ty1, ty_of_string ty2))::(signatures_of_string_list rest)
 
-(* astを型情報付きのastに変更 *)
+(* 型が関数型の時に関数を引数に取るか確認 *)
+let rec check_fun_ty = function
+  | TyBool -> false
+  | TyString -> false
+  | TyVar _ -> false
+  | TyArrow (ty1, _) -> (match ty1 with
+    | TyArrow _ -> true
+    | _ -> false)
+  | TyHandler _ -> false
 

@@ -7,8 +7,11 @@ let rec remove_first_id id = function
 let pick_arrow = function
   | TrArrow (x, s) -> (match x with
     | TrVar x -> (x, s)
-    | _ -> failwith "Not a variable")
-  | _ -> failwith "Not an arrow"
+    | TrArrow (x', _) -> ( match x' with
+      | TrVar x' -> (x', s)
+      | _ -> failwith "Not an arrow1")
+    | _ -> failwith "Not an arrow2")
+  | _ -> failwith "Not an arrow3"
 
 let in_ops op ops = List.mem op ops
 

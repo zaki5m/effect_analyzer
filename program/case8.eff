@@ -1,0 +1,8 @@
+effect read: bool -> string
+
+do printFullName <- 
+    fun x -> read(x;foreName. 
+                    read(x;surName. return foreName ^ surName)) in
+do h <- handler { return y -> return y, read (y;k) -> do x <- k "Bob" in k "Bill" } in
+do f <- return fun x -> x true in 
+with h handle (f printFullName)

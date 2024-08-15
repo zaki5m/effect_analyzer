@@ -1,0 +1,7 @@
+effect read: bool -> string;
+effect write: bool -> string
+
+do f1 <- return fun x -> read(x;y. return y) in
+do f2 <- return fun x -> write(x;y. return y) in
+do h <- handler { return y -> return y, read(y;k) -> do x <- k "Bob" in k "Bill" ; write(y;k) -> do x <- k "Bob" in k "Bill" } in
+with h handle (do x <- if true then f1  else f2  in do y <- x true in return y)

@@ -4,13 +4,17 @@ let rec remove_first_id id = function
   | [] -> []
   | (id', trace) :: rest -> if id = id' then rest else (id', trace) :: (remove_first_id id rest)
 
-let pick_arrow = function
+let rec pick_arrow = function
   | TrArrow (x, s) -> (match x with
-    | TrVar x -> (x, s)
+    | TrVar x -> [(x, s)]
     | TrArrow (x', _) -> ( match x' with
-      | TrVar x' -> (x', s)
+      | TrVar x' -> [(x', s)]
       | _ -> failwith "Not an arrow1")
     | _ -> failwith "Not an arrow2")
+  | TrNonDet (t1, t2) -> 
+    let first = pick_arrow t1 in
+    let second = pick_arrow t2 in
+    first @ second
   | _ -> failwith "Not an arrow3"
 
 let in_ops op ops = List.mem op ops
@@ -25,7 +29,7 @@ let algorithm_sigma id op (h: handler_syntax) sigma =
   (* c_op内のエフェクト変数op_aをv_traceで置き換える *)
   let c_op' = substitution_trace_state "op_a" v_trace c_op in
   (* continuation_traceを分解 *)
-  let (b, continuation_state) = pick_arrow continuation_trace in
+  let (b, continuation_state) = List.hd (pick_arrow continuation_trace) in
   (* continuation_stateのbをop_bで置き換える *)
   let continuation_state' = substitution_trace_state b (TrVar "op_b") continuation_state in
   c_op', continuation_state'
@@ -95,7 +99,13 @@ let rec handler_in_trace_analysis sigma handler = function
       let trace_state1 = handler_in_trace_analysis sigma handler (t1, t1') in
       let trace_state2 = handler_in_trace_analysis sigma handler (t2, t2') in
       create_trace_state (TrNonDet (trace_state1.trace, trace_state2.trace)) (TrNonDet (trace_state1.return_trace, trace_state2.return_trace)) (trace_state1.trace_set @ trace_state2.trace_set)
-    | _ -> failwith "Not implemented")
+    | TrBottom -> 
+      let trace_state1 = handler_in_trace_analysis sigma handler (t1, TrBottom) in
+      let trace_state2 = handler_in_trace_analysis sigma handler (t2, TrBottom) in
+      create_trace_state (TrNonDet (trace_state1.trace, trace_state2.trace)) TrBottom (trace_state1.trace_set @ trace_state2.trace_set)
+    | _ -> 
+      Log.log DEBUG ("TrNonDet" ^ (string_of_trace_syntax t));
+      failwith "Not implemented")
   | (TrArrow (t, s), t') -> failwith "Not implemented"
   | (TrHandler h, t) -> failwith "Not implemented"
   | (TrParen t, t') -> 

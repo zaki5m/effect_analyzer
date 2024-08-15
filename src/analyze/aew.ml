@@ -50,10 +50,18 @@ let rec check_computation_trace (env: trace_env) = function
   | Apply (v1, v2) ->
     Log.log DEBUG (string_of_computation (Apply (v1, v2)));
     let trace_state1 = check_value_trace env v1 in
-    let (t, s) = pick_arrow trace_state1 in
     let trace_state2 = check_value_trace env v2 in
-    let new_s = substitution_trace_state t trace_state2 s in
-    create_trace_state new_s.trace new_s.return_trace new_s.trace_set
+    let arrow_lst = pick_arrow trace_state1 in
+    if List.length arrow_lst = 1 then 
+      let (t, s) = List.hd arrow_lst in
+      let new_s = substitution_trace_state t trace_state2 s in
+      create_trace_state new_s.trace new_s.return_trace new_s.trace_set
+    else
+      let (t1, s1) = List.hd arrow_lst in
+      let new_s1 = substitution_trace_state t1 trace_state2 s1 in
+      let (t2, s2) = List.hd (List.tl arrow_lst) in
+      let new_s2 = substitution_trace_state t2 trace_state2 s2 in
+      create_trace_state (TrNonDet (new_s1.trace, new_s2.trace)) (TrNonDet (new_s1.return_trace, new_s2.return_trace)) (new_s1.trace_set @ new_s2.trace_set)
   | Handle (v, c) -> 
     Log.log DEBUG (string_of_computation (Handle (v, c)));
     let trace_state = check_computation_trace env c in
@@ -113,18 +121,38 @@ let rec check_typed_computation_trace subst (env: trace_env) = function
   | TApply ((v1, v2), ty) ->
     Log.log DEBUG (string_of_typed_computation (TApply ((v1, v2), ty)));
     let trace_state1 = check_typed_value_trace subst env v1 in
-    let (t, s) = pick_arrow trace_state1 in
+    let arrow_lst = pick_arrow trace_state1 in
     let trace_state2 = check_typed_value_trace subst env v2 in
-    (* trace_state2が関数型かどうか確認 *)
-    (match trace_state2 with
-      | TrArrow (x, s') -> 
-        let new_s = substitution_trace_state t x s in
-        let new_s = substitution_trace_state (t ^ "_t") s'.trace new_s in
-        let new_s = substitution_trace_state (t ^ "_r") s'.return_trace new_s in
-        create_trace_state new_s.trace new_s.return_trace (new_s.trace_set @ s'.trace_set)
-      | _ -> 
-        let new_s = substitution_trace_state t trace_state2 s in
-        create_trace_state new_s.trace new_s.return_trace new_s.trace_set)
+    if List.length arrow_lst = 1 then 
+      let (t, s) = List.hd arrow_lst in
+      (* trace_state2が関数型かどうか確認 *)
+      (match trace_state2 with
+        | TrArrow (x, s') -> 
+          let new_s = substitution_trace_state t x s in
+          let new_s = substitution_trace_state (t ^ "_t") s'.trace new_s in
+          let new_s = substitution_trace_state (t ^ "_r") s'.return_trace new_s in
+          create_trace_state new_s.trace new_s.return_trace (new_s.trace_set @ s'.trace_set)
+        | _ -> 
+          let new_s = substitution_trace_state t trace_state2 s in
+          create_trace_state new_s.trace new_s.return_trace new_s.trace_set)
+      else
+        let (t1, s1) = List.hd arrow_lst in
+        (* trace_state2が関数型かどうか確認 *)
+        (match trace_state2 with
+        | TrArrow (x, s') -> 
+          let new_s = substitution_trace_state t1 x s1 in
+          let new_s = substitution_trace_state (t1 ^ "_t") s'.trace new_s in
+          let new_s = substitution_trace_state (t1 ^ "_r") s'.return_trace new_s in
+          let (t2, s2) = List.hd (List.tl arrow_lst) in
+          let new_s2 = substitution_trace_state t2 x s1 in
+          let new_s2 = substitution_trace_state (t2 ^ "_t") s'.trace new_s2 in
+          let new_s2 = substitution_trace_state (t2 ^ "_r") s'.return_trace new_s2 in
+          create_trace_state (TrNonDet (new_s.trace, new_s2.trace)) (TrNonDet (new_s.return_trace, new_s2.return_trace)) (new_s.trace_set @ new_s2.trace_set @ s'.trace_set)
+        | _ -> 
+          let new_s = substitution_trace_state t1 trace_state2 s1 in
+          let (t2, s2) = List.hd (List.tl arrow_lst) in
+          let new_s2 = substitution_trace_state t2 trace_state2 s2 in
+          create_trace_state (TrNonDet (new_s.trace, new_s2.trace)) (TrNonDet (new_s.return_trace, new_s2.return_trace)) (new_s.trace_set @ new_s2.trace_set))
   | THandle ((v, c), ty) ->
     Log.log DEBUG (string_of_typed_computation (THandle ((v, c), ty)));
     let trace_state = check_typed_computation_trace subst env c in

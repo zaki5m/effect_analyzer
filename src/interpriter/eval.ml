@@ -37,17 +37,25 @@ let reset_runner state = {
 
 let find_op_clause op state = Runner.lookup_eff op state.runner
 
+let fresh_var =
+  let counter = ref 0 in
+  fun () -> 
+    let v = !counter in
+    counter := !counter + 1;
+    "_f" ^ string_of_int v
+
 
 
 
 let rec eval_computation (state: state) = function
-  | Return v -> Return (eval_value state v)
+  | Return v -> 
+    Return (eval_value state v)
   | Op (op, (v, x, c)) -> (* Handle operation calls *)
     Op (op, ((eval_value state v), x, c))
   | Do (x, c1, c2) ->
       let c = eval_computation state c1 in
       (match c with
-      | Return v -> 
+      | Return v ->
         let comp = substitute_computation x v c2 in
         eval_computation state comp
       | Op (op, (v, y, c')) -> 
@@ -58,11 +66,26 @@ let rec eval_computation (state: state) = function
       | Bool false -> eval_computation state c2
       | _ -> failwith "Expected boolean in if condition")
   | Apply (v1, v2) -> (match eval_value state v1 with
-      | Fun (x, c) ->
+      | Fun (f, x, c) ->
           let v = eval_value state v2 in
           let comp = substitute_computation x v c in
+          let comp = substitute_computation f (Fun (f, x, c)) comp in
           eval_computation state comp
       | _ -> failwith "Expected function in application")
+  | BinOp (op, v1, v2) -> (
+    match eval_value state v1, eval_value state v2 with
+      | Int i1, Int i2 -> (match op with
+          | Add -> Return (Int (i1 + i2))
+          | Sub -> Return (Int (i1 - i2))
+          | Mul -> Return (Int (i1 * i2))
+          | Div -> Return (Int (i1 / i2))
+          | Eq -> Return (Bool (i1 = i2))
+          | Neq -> Return (Bool (i1 <> i2))
+          | Lt -> Return (Bool (i1 < i2))
+          | Le -> Return (Bool (i1 <= i2))
+          | Gt -> Return (Bool (i1 > i2))
+          | Ge -> Return (Bool (i1 >= i2)))
+      | _ -> failwith "Expected string in binary operation")
   | Handle (v, c) -> (match eval_value state v with
       | Handler h -> eval_handle h state c
       | _ -> failwith "Expected handler in handle expression")
@@ -72,11 +95,12 @@ and eval_value state = function
         Environment.Not_bound -> failwith ("Variable not bound: " ^ x))
   | Bool b -> Bool b
   | String s -> String s
+  | Int i -> Int i
   | Concat (s1, s2) -> 
       (match eval_value state s1, eval_value state s2 with
       | String s1, String s2 -> String (s1 ^ s2)
       | _ -> failwith "Expected string in concatenation")
-  | Fun (x, c) -> Fun (x, c)
+  | Fun (f, x, c) -> Fun (f, x, c)
   | Handler h -> Handler h
 
 and eval_handle h state c =
@@ -93,7 +117,7 @@ and eval_handle h state c =
           let v_eval = eval_value !state' v in
           let (y, k, c') = find_op_clause op !state' in
           let comp = substitute_computation y v_eval c' in
-          let comp' = substitute_computation k (Fun (x, Handle (Handler h, c))) comp in
+          let comp' = substitute_computation k (Fun (fresh_var(), x, Handle (Handler h, c))) comp in
           eval_computation state comp'
           with Not_found -> Op(op, ((eval_value !state' v), x, Handle (Handler h, c))))
     | _ -> failwith "Unhandled case in handle"
@@ -120,7 +144,7 @@ let read () =
     let program = Parser.main Lexer.read lexbuf in
     let Exp (signatures, comp) = program in
     let signatures = Type.signatures_of_string_list signatures in
-    let type_check = Type.type_of_program signatures comp in
+    (* let type_check = Type.type_of_program signatures comp in *)
     program
   with
   | Parser.Error ->

@@ -11,6 +11,9 @@
 %token <Syntax.id> ID
 %token <string>STRING_LITERAL
 %token EFFECT COLON
+%token <int> INT
+%token PLUS MINUS TIMES DIV
+%token EQ NEQ LT LE GT GE
 %token EOF
 
 %start main
@@ -33,6 +36,16 @@ Effect_list:
 Expr :
     RETURN v=VExpr { Return v }
   | i1=ID LPAREN v=VExpr SEMICOLON i2=ID DOT e=Expr RPAREN { Op(i1, (v, i2, e)) }
+  | v1=VExpr PLUS v2=VExpr { BinOp(Add, v1, v2) }
+  | v1=VExpr MINUS v2=VExpr { BinOp(Sub, v1, v2) }
+  | v1=VExpr TIMES v2=VExpr { BinOp(Mul, v1, v2) }
+  | v1=VExpr DIV v2=VExpr { BinOp(Div, v1, v2) }
+  | v1=VExpr EQ v2=VExpr { BinOp(Eq, v1, v2) }
+  | v1=VExpr NEQ v2=VExpr { BinOp(Neq, v1, v2) }
+  | v1=VExpr LT v2=VExpr { BinOp(Lt, v1, v2) }
+  | v1=VExpr LE v2=VExpr { BinOp(Le, v1, v2) }
+  | v1=VExpr GT v2=VExpr { BinOp(Gt, v1, v2) }
+  | v1=VExpr GE v2=VExpr { BinOp(Ge, v1, v2) }
   | DO i=ID LARROW e1=Expr IN e2=Expr { Do(i, e1, e2) }
   | IF v=VExpr THEN e1=Expr ELSE e2=Expr { If(v, e1, e2) }
   | v1=VExpr v2=VExpr { Apply(v1, v2) }
@@ -44,9 +57,10 @@ VExpr :
   | TRUE { Bool true }
   | FALSE { Bool false }
   | s=STRING_LITERAL { String s }
+  | i=INT { Int i }
   | v1=VExpr CARET v2=VExpr { Concat(v1, v2) }
   | i=ID { Var i }
-  | FUN i=ID RARROW e=Expr { Fun(i, e) }
+  | FUN f=ID i=ID RARROW e=Expr { Fun(f, i, e) }
   | HANDLER LBRACE RETURN i=ID RARROW e=Expr COMMA op=Op_clauses RBRACE {
       Handler { return_clause = (i, e); op_clauses = op }
     }

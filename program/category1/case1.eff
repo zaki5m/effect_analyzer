@@ -1,0 +1,7 @@
+effect read: bool -> string
+
+do h <- handler { return y -> return y, read (y;k) -> do x <- k "Bob" in k x } in
+do y <- with h handle 
+    read(true;name1.
+        read(true;name2. return (name1 ^ name2))) in
+return y

@@ -4,8 +4,9 @@ type value =
   | Var of id
   | Bool of bool
   | String of string
+  | Int of int
   | Concat of value * value
-  | Fun of id * computation
+  | Fun of id * id * computation
   | Handler of handler
 
 and handler = {
@@ -19,7 +20,9 @@ and computation =
   | Do of id * computation * computation
   | If of value * computation * computation
   | Apply of value * value
+  | BinOp of binop * value * value
   | Handle of value * computation
+and binop = Add | Sub | Mul | Div | Eq | Neq | Lt | Le | Gt | Ge
 
 type program = 
   Exp of ((string * ( string * string)) list * computation)
@@ -27,6 +30,7 @@ type program =
 let string_of_val = function
   | Bool b -> string_of_bool b
   | String s -> s
+  | Int i -> string_of_int i
   | Fun _ -> "<fun>"
   | Handler _ -> "<handler>"
   | Var x -> "<var>" ^ x
@@ -38,6 +42,7 @@ let rec string_of_computation = function
   | Do (x, c1, c2) -> "Do (" ^ x ^ ". " ^ string_of_computation c1 ^ ", " ^ string_of_computation c2 ^ ")"
   | If (v, c1, c2) -> "If (" ^ string_of_val v ^ ", " ^ string_of_computation c1 ^ ", " ^ string_of_computation c2 ^ ")"
   | Apply (v1, v2) -> "Apply (" ^ string_of_val v1 ^ ", " ^ string_of_val v2 ^ ")"
+  | BinOp (op, v1, v2) -> "BinOp (" ^ (match op with Add -> "+" | Sub -> "-" | Mul -> "*" | Div -> "/" | _ -> "_") ^ ", " ^ string_of_val v1 ^ ", " ^ string_of_val v2 ^ ")"
   | Handle (v, c) -> "Handle (" ^ string_of_val v ^ ", " ^ string_of_computation c ^ ")"
 
 let  print_val v = print_string (string_of_val v)

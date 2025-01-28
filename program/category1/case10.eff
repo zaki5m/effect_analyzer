@@ -1,0 +1,5 @@
+effect read: bool -> string;
+effect write: bool -> string
+
+do f1 <- (return fun f x -> do y <- x - 1 in do z <- y == 0 in do a <- if z then 0 else f y in x + a ) in
+f1 10

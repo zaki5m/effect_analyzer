@@ -81,7 +81,7 @@ let rec extract_val signatures ty_env = function
   | Bool _ -> ([], TyBool)
   | String _ -> ([], TyString)
   | Var x -> ([], lookup_env x ty_env)
-  | Fun (x, c) -> 
+  | Fun (f, x, c) -> 
     let ty_x = TyVar (fresh_tyvar ()) in
     let ty_env' = update_env x ty_x ty_env in
     let set, ty_c = extract_computation signatures ty_env' c in

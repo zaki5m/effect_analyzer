@@ -3,9 +3,12 @@ open Syntax
 let rec substitute_computation id value = function
   | Return v -> Return (substitute_value id value v)
   | Op (op, (v, x, c)) -> Op (op, (substitute_value id value v, x, substitute_computation id value c))
-  | Do (x, c1, c2) -> Do (x, substitute_computation id value c1, substitute_computation id value c2)
+  | Do (x, c1, c2) -> 
+    if id = x then Do (x, c1, c2)
+    else Do (x, substitute_computation id value c1, substitute_computation id value c2)
   | If (v, c1, c2) -> If (substitute_value id value v, substitute_computation id value c1, substitute_computation id value c2)
   | Apply (v1, v2) -> Apply (substitute_value id value v1, substitute_value id value v2)
+  | BinOp (op, v1, v2) -> BinOp (op, substitute_value id value v1, substitute_value id value v2)
   | Handle (v, c) -> Handle (substitute_value id value v, substitute_computation id value c)
 and substitute_handler id value h = 
     let (return_id, return_clause) = h.return_clause in
@@ -18,6 +21,9 @@ and substitute_value id value = function
   | Var id' -> Var id'
   | Bool b -> Bool b
   | String s -> String s
+  | Int i -> Int i
   | Concat (v1, v2) -> Concat (substitute_value id value v1, substitute_value id value v2)
-  | Fun (id', c) -> Fun (id', substitute_computation id value c)
+  | Fun (f, id', c) -> 
+    if id = id' then Fun (f, id', c)
+    else Fun (f, id', substitute_computation id value c)
   | Handler h -> Handler (substitute_handler id value h)

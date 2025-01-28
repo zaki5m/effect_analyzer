@@ -22,6 +22,7 @@
 
 rule read = parse
   | [' ' '\t' '\n'] { read lexbuf }
+  | ['0'-'9']+ as num { INT (int_of_string num) } (* 整数リテラル *)
   | "(*"            { incr nest; comment lexbuf }
   | "true"          { TRUE }
   | "false"         { FALSE }
@@ -48,6 +49,16 @@ rule read = parse
   | ","             { COMMA }
   | "."             { DOT }
   | "^"             { CARET } 
+  | '+'             { PLUS }
+  | '-'             { MINUS }
+  | '*'             { TIMES }
+  | '/'             { DIV }
+  | "=="            { EQ }
+  | "!="            { NEQ }
+  | "<="            { LE }
+  | ">="            { GE }
+  | "<"             { LT }
+  | ">"             { GT }
   | "\"" [^ '"']* "\"" as lxm { STRING_LITERAL (String.sub lxm 1 (String.length lxm - 2)) }
   | ['a'-'z'] ['a'-'z' 'A'-'Z' '0'-'9' '_' '\'']*
     { let id = Lexing.lexeme lexbuf in

@@ -74,7 +74,7 @@ let rec check_computation_trace (env: trace_env) = function
 and check_value_trace (env: trace_env) = function
   | Bool _ -> TrEmpty
   | String _ -> TrEmpty
-  | Fun (x, c) -> TrArrow (TrVar x, check_computation_trace (update_trace_env x (TrVar x) env) c)
+  | Fun (f, x, c) -> TrArrow (TrVar x, check_computation_trace (update_trace_env x (TrVar x) env) c)
   | Handler h -> check_handler_trace h env
   | Var x -> (try lookup_trace_env x env with 
         Trace_environment.Not_found -> failwith ("Variable not bound: " ^ x))
